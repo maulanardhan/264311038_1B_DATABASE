@@ -1,0 +1,47 @@
+1. [CREATE] Lakukan INSERT minimal 3 baris data dummy ke masing-masing tabel (total 9 baris data).
+  
+  -- Insert Tabel BARANG
+INSERT INTO BARANG (ID_Barang, Nama_Barang, Harga_Jual, Stok) VALUES 
+('B001', 'Air Mineral 2L', 14000, 50),
+('B002', 'Beras Merah 5kg', 75000, 30),
+('B003', 'Gula Merah 1kg', 16000, 100);
+
+-- Insert Tabel TRANSAKSI
+INSERT INTO TRANSAKSI (ID_Transaksi, Tanggal, Total, Metode_Bayar) VALUES 
+('T001', '2026-10-18', 110000, 'Tunai'),
+('T002', '2026-10-19', 16000, 'QRIS'),
+('T003', '2026-10-20', 150000, 'Tunai');
+
+-- Insert Tabel DETAIL TRANSAKSI
+INSERT INTO DETAIL_TRANSAKSI (ID_Detail, ID_Transaksi, ID_Barang, Harga_Jual, Jumlah, Subtotal, Jumlah_Retur) VALUES 
+('DT01', 'T001', 'B001', 14000, 1, 14000, 0), 
+('DT02', 'T001', 'B002', 75000, 1, 75000, 0),
+('DT03', 'T002', 'B003', 16000, 1, 16000, 0); 
+
+
+2. [READ] Tampilkan seluruh isi salah satu Tabel Induk menggunakan perintah SELECT *.
+
+  SELECT * FROM BARANG;
+
+
+
+3. [UPDATE] Ubah Satu Nilai Data Pada Tabel Transaksi
+Mengubah metode pembayaran pada tabel TRANSAKSI untuk ID transaksi 'T001' dari 'Tunai' menjadi 'QRIS'.
+
+  UPDATE TRANSAKSI 
+SET Metode_Bayar = 'QRIS' 
+WHERE ID_Transaksi = 'T001'; 
+
+
+
+4. [DELETE] Hapus Salah Satu Baris Data Dummy
+
+Menghapus item detail transaksi dengan ID 'DT03'.
+
+  DELETE FROM DETAIL_TRANSAKSI 
+WHERE ID_Detail = 'DT04'; 
+
+
+
+
+
