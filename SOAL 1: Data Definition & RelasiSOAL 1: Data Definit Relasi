@@ -1,0 +1,32 @@
+SQL
+
+-- 1. TABEL INDUK: BARANG
+CREATE TABLE BARANG (
+    ID_Barang VARCHAR(10) PRIMARY KEY,
+    Nama_Barang VARCHAR(100) NOT NULL,
+    Harga_Jual INT NOT NULL,
+    Stok INT NOT NULL
+);
+
+-- 2. TABEL INDUK: TRANSAKSI
+CREATE TABLE TRANSAKSI (
+    ID_Transaksi VARCHAR(10) PRIMARY KEY,
+    Tanggal DATE NOT NULL,
+    Total INT NOT NULL,
+    Metode_Bayar VARCHAR(50) NOT NULL
+);
+
+-- 3. TABEL ANAK/TRANSAKSI: DETAIL TRANSAKSI
+CREATE TABLE DETAIL_TRANSAKSI (
+    ID_Detail VARCHAR(10) PRIMARY KEY,
+    ID_Transaksi VARCHAR(10),
+    ID_Barang VARCHAR(10),
+    Harga_Jual INT NOT NULL,
+    Jumlah INT NOT NULL,
+    Subtotal INT NOT NULL,
+    Jumlah_Retur INT DEFAULT 0,
+    -- Wajib ada Foreign Key di bawah ini:
+    FOREIGN KEY (ID_Transaksi) REFERENCES TRANSAKSI(ID_Transaksi),
+    FOREIGN KEY (ID_Barang) REFERENCES BARANG(ID_Barang)
+);
+ 
