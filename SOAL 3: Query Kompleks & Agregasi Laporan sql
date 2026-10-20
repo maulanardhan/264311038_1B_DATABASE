@@ -1,0 +1,9 @@
+SELECT 
+    b.Nama_Barang, 
+    SUM(dt.Jumlah) AS Total_Barang_Terjual,
+    SUM(dt.Harga_Jual * dt.Jumlah) AS Total_Pendapatan
+FROM DETAIL_TRANSAKSI dt
+JOIN BARANG b ON dt.ID_Barang = b.ID_Barang
+JOIN TRANSAKSI t ON dt.ID_Transaksi = t.ID_Transaksi
+WHERE t.Metode_Bayar = 'Tunai'
+GROUP BY b.Nama_Barang;
