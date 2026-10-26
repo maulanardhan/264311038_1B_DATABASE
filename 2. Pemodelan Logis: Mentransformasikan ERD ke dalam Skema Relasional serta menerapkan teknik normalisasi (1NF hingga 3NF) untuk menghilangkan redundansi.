@@ -1,0 +1,90 @@
+# TABEL UNF 
+
+| ID_Penyesuaian | Tanggal    | ID_Kasir | Nama_Kasir | Daftar_Barang_dan_Penyesuaian                           | Alasan_Umum      | Catatan                     |
+| :---           | :---       | :---     | :---       | :---                                                    | :---             | :---                        |
+| PS-001         | 2026-10-20 | KSR-01   | Rina       | BRG-01: 3 unit rusak; BRG-02: 2 unit kedaluwarsa        | Pemeriksaan stok | Dua barang dalam satu kolom |
+| PS-002         | 2026-10-21 | KSR-02   | Doni       | BRG-03: 1 unit rusak                                    | Kemasan bocor    | Satu barang                 |
+| PS-003         | 2026-10-22 | KSR-01   | Rina       | BRG-01: 1 unit koreksi stok; BRG-04: 4 unit kedaluwarsa | Audit persediaan | Dua barang dalam satu kolom |
+
+
+
+---
+
+# TABEL 1NF 
+
+| ID_Penyesuaian | Tanggal    | ID_Kasir | Nama_Kasir | ID_Barang | Nama_Barang       | Jenis_Penyesuaian | Jumlah | Alasan                      |
+| :---           | :---       | :---     | :---       | :---      | :---              | :---              | :---   | :---                        |
+| PS-001         | 2026-10-20 | KSR-01   | Rina       | BRG-01    | Beras 5 kg        | RUSAK             | 3      | Kemasan robek               |
+| PS-001         | 2026-10-20 | KSR-01   | Rina       | BRG-02    | Minyak Goreng 1 L | KEDALUWARSA       | 2      | Melewati tanggal layak jual |
+| PS-002         | 2026-10-21 | KSR-02   | Doni       | BRG-03    | Gula Pasir 1 kg   | RUSAK             | 1      | Kemasan bocor               |
+| PS-003         | 2026-10-22 | KSR-01   | Rina       | BRG-01    | Beras 5 kg        | KOREKSI           | 1      | Hasil audit persediaan      |
+| PS-003         | 2026-10-22 | KSR-01   | Rina       | BRG-04    | Susu UHT 1 L      | KEDALUWARSA       | 4      | Melewati tanggal layak jual |
+
+Data sudah atomik, tetapi nama kasir dan nama barang masih berulang.
+
+---
+
+### TAHAPAN 2NF
+
+# 2NF - TABEL HEADER PENYESUAIAN
+  
+| ID_Penyesuaian (PK) | Tanggal    | ID_Kasir | Nama_Kasir | Alasan_Dokumen   |
+| :---                | :---       | :---     | :---       | :---             |
+| PS-001              | 2026-10-20 | KSR-01   | Rina       | Pemeriksaan stok |
+| PS-002              | 2026-10-21 | KSR-02   | Doni       | Pemeriksaan stok |
+| PS-003              | 2026-10-22 | KSR-01   | Rina       | Audit persediaan |
+
+Nama_Kasir masih tergantung pada ID_Kasir; dipisahkan lagi untuk 3NF.
+
+# 2NF - TABEL DETAIL PENYESUAIAN
+
+| ID_Penyesuaian (PK/FK) | ID_Barang (PK/FK) | Jenis_Penyesuaian | Jumlah | Alasan_Detail               |
+| :---                   | :---              | :---              | :---   | :---                        |
+| PS-001                 | BRG-01            | RUSAK             | 3      |Kemasan robek                |
+| PS-001                 | BRG-02            | KEDALUWARSA       | 2      | Melewati tanggal layak jual |
+| PS-002                 | BRG-03            | RUSAK             | 1      | Kemasan bocor               |
+| PS-003                 | BRG-01            | KOREKSI           | 1      | Hasil audit persediaan      |
+| PS-003                 | BRG-04            | KEDALUWARSA       | 4      | Melewati tanggal layak jual |
+
+`(ID_Penyesuaian, ID_Barang)`. Jumlah dan alasan detail bergantung pada baris penyesuaian barang.
+
+---
+
+### TAHAPAN 3NF
+
+# 3NF - TABEL PENYESUAIAN_STOK
+
+| ID_Penyesuaian (PK) | Tanggal    | ID_Kasir (FK) | Alasan_Dokumen   |
+| :---                | :---       | :---          | :---             |
+| PS-001              | 2026-10-20 | KSR-01        | Pemeriksaan stok |
+| PS-002              | 2026-10-21 | KSR-02        | Pemeriksaan stok |
+| PS-003              | 2026-10-22 | KSR-01        | Audit persediaan |
+
+# 3NF - TABEL DETAIL_PENYESUAIAN
+
+| ID_Penyesuaian (PK/FK) | ID_Barang (PK/FK) | Jenis_Penyesuaian | Jumlah | Alasan_Detail               |
+| :---                   | :---              | :---              | :---   | :---                        |
+| PS-001                 | BRG-01            | RUSAK             | 3      | Kemasan robek               |
+| PS-001                 | BRG-02            | KEDALUWARSA       | 2      | Melewati tanggal layak jual |
+| PS-002                 | BRG-03            | RUSAK             | 1      | Kemasan bocor               |
+| PS-003                 | BRG-01            | KOREKSI           | 1      | Hasil audit persediaan      |
+| PS-003                 | BRG-04            | KEDALUWARSA       | 4      | Melewati tanggal layak jual |
+
+# 3NF - MASTER BARANG
+
+| ID_Barang (PK) | Nama_Barang       | Harga_Jual | Stok_Sistem |
+| :---           | :---              | :---       | :---        |
+| BRG-01         | Beras 5 kg        | 75000      | 42          |
+| BRG-02         | Minyak Goreng 1 L | 18000      | 27          |
+| BRG-03         | Gula Pasir 1 kg   | 17000      | 35          |
+| BRG-04         | Susu UHT 1 L      | 19000      | 18          |
+
+# 3NF - MASTER KASIR
+
+| ID_Kasir (PK) | Nama_Kasir | Shift |
+| :---          | :---       | :---  |
+| KSR-01        | Rina       | PAGI  |
+| KSR-02        | Doni       | SIANG |
+
+---
+
