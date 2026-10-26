@@ -1,0 +1,154 @@
+Pemodelan Logis Sistem Informasi Retail
+
+## A. Transformasi ERD ke Skema Relasional
+
+### A.1 Aturan Transformasi
+
+| No | Elemen ERD                        | Aturan Transformasi                                                       |
+|----|-----------------------------------|---------------------------------------------------------------------------|
+| 1  | Entitas kuat                      | Menjadi satu relasi (tabel), atribut kunci menjadi Primary Key            |
+| 2  | Atribut biasa                     | Menjadi kolom pada relasi                                                 |      
+| 3  | Atribut turunan (SUBTOTAL, TOTAL) | Tidak disimpan sebagai kolom biasa, dihitung dari atribut lain            |
+| 4  | Relasi 1:N                        | Primary Key sisi "1" menjadi Foreign Key di sisi "N"                      |
+| 5  | Relasi M:N                        | Menjadi relasi baru, PK gabungan dari kedua FK, atribut relasi ikut masuk |
+
+### A.2 Pemetaan Relasi ERD 
+
+| Relasi ERD       | Kardinalitas                    | Hasil Transformasi                                                  |
+|------------------|---------------------------------|---------------------------------------------------------------------|
+| MENGIRIM         | SUPPLIER 1 : N BARANG_MASUK     | FK id_supplier di BARANG_MASUK                                      |
+| DETAIL MASUK     | BARANG_MASUK M : N BARANG       | Tabel baru DETAIL_MASUK (atribut: jumlah_masuk)                     |
+| MENCATAT         | KASIR 1 : N TRANSAKSI           | FK id_kasir di TRANSAKSI                                            |
+| DETAIL TRANSAKSI | TRANSAKSI M : N BARANG          | Tabel baru DETAIL_TRANSAKSI (atribut: jumlah, harga_jual, subtotal) |
+| MENCATAT         | BARANG 1 : N PENYESUAIAN_STOK   | FK id_barang di PENYESUAIAN_STOK                                    |
+| DIAJUKAN DARI    | TRANSAKSI 1 : N RETUR_PELANGGAN | FK id_transaksi di RETUR_PELANGGAN                                  |
+| MERETUR          | BARANG 1 : N RETUR_PELANGGAN    | FK id_barang di RETUR_PELANGGAN (atribut: jumlah_retur)             |
+| MENYETUJUI       | PEMILIK 1 : N RETUR_PELANGGAN   | FK id_pemilik di RETUR_PELANGGAN                                    |
+
+### A.3 Skema Relasional Akhir (PK = Primary Key, FK = Foreign Key)
+
+```
+PEMILIK (id_pemilik [PK], nama_pemilik)
+
+KASIR (id_kasir [PK], nama_kasir, shift)
+
+SUPPLIER (id_supplier [PK], nama_supplier, no_telepon)
+
+BARANG (id_barang [PK], nama_barang, harga_jual, stok)
+
+BARANG_MASUK (id_masuk [PK], tanggal_masuk, no_surat_jalan,
+              id_supplier [FK -> SUPPLIER])
+
+DETAIL_MASUK (id_masuk [PK, FK -> BARANG_MASUK],
+              id_barang [PK, FK -> BARANG],
+              jumlah_masuk)
+
+TRANSAKSI (id_transaksi [PK], tanggal,
+           id_kasir [FK -> KASIR])
+
+DETAIL_TRANSAKSI (id_transaksi [PK, FK -> TRANSAKSI],
+                  id_barang [PK, FK -> BARANG],
+                  jumlah, harga_jual, subtotal*)
+
+PENYESUAIAN_STOK (id_penyesuaian [PK], jenis_penyesuaian, tanggal,
+                  jumlah, alasan,
+                  id_barang [FK -> BARANG])
+
+RETUR_PELANGGAN (id_retur [PK], tanggal_retur, alasan, jumlah_retur,
+                 id_transaksi [FK -> TRANSAKSI],
+                 id_barang [FK -> BARANG],
+                 id_pemilik [FK -> PEMILIK])
+```
+
+## B. Normalisasi
+
+### B.1 Kasus : Transaksi Penjualan
+
+#### UNF (Unnormalized Form)
+
+Data nota penjualan masih memiliki kelompok berulang (daftar barang dalam satu transaksi).
+
+Relasi: `NOTA (id_transaksi, tanggal, id_kasir, nama_kasir, shift, {id_barang, nama_barang, jumlah, harga_jual, subtotal}, total)`
+
+| id_transaksi | tanggal          | id_kasir | nama_kasir   | shift | id_barang  | nama_barang                            | jumlah | harga_jual   | subtotal     | total |
+|--------------|------------------|----------|--------------|-------|------------|----------------------------------------|--------|--------------|--------------|-------|
+| T001         | 2026-10-25 08:15 | K001     | Andi Pratama | Pagi  | B001, B005 | Beras Premium 5 Kg, Mie Instan Goreng  | 1, 5   | 65000, 3500  | 65000, 17500 | 82500 |
+| T002         | 2026-10-25 13:40 | K002     | Dewi Lestari | Siang | B002, B003 | Minyak Goreng 2 Liter, Gula Pasir 1 Kg | 2, 1   | 38000, 17000 | 76000, 17000 | 93000 |
+
+
+#### 1NF (First Normal Form)
+
+| id_transaksi (PK) | id_barang (PK) | tanggal          | id_kasir | nama_kasir   | shift | nama_barang           | jumlah | harga_jual | subtotal | total |
+|-------------------|----------------|------------------|----------|--------------|-------|-----------------------|--------|------------|----------|-------|
+| T001              | B001           | 2026-10-25 08:15 | K001     | Andi Pratama | Pagi  | Beras Premium 5 Kg    | 1      | 65000      | 65000    | 82500 |
+| T001              | B005           | 2026-10-25 08:15 | K001     | Andi Pratama | Pagi  | Mie Instan Goreng     | 5      | 3500       | 17500    | 82500 |
+| T002              | B002           | 2026-10-25 13:40 | K002     | Dewi Lestari | Siang | Minyak Goreng 2 Liter | 2      | 38000      | 76000    | 93000 |
+| T002              | B003           | 2026-10-25 13:40 | K002     | Dewi Lestari | Siang | Gula Pasir 1 Kg       | 1      | 17000      | 17000    | 93000 |
+
+
+#### 2NF (Second Normal Form)
+
+Dekomposisi menjadi 3 relasi:
+
+**TRANSAKSI**
+
+| id_transaksi (PK) | tanggal          | id_kasir | nama_kasir   | shift | total |
+|-------------------|------------------|----------|--------------|-------|-------|
+| T001              | 2026-10-25 08:15 | K001     | Andi Pratama | Pagi  | 82500 |
+| T002              | 2026-10-25 13:40 | K002     | Dewi Lestari | Siang | 93000 |
+
+
+**BARANG**
+
+| id_barang (PK) | nama_barang           |
+|----------------|-----------------------|
+| B001           | Beras Premium 5 Kg    |
+| B005           | Mie Instan Goreng     |
+| B002           | Minyak Goreng 2 Liter |
+| B003           | Gula Pasir 1 Kg       |
+
+**DETAIL_TRANSAKSI**
+
+| id_transaksi (PK, FK) | id_barang (PK, FK) | jumlah | harga_jual | subtotal |
+|-----------------------|--------------------|--------|------------|----------|
+| T001                  | B001               | 1      | 65000      | 65000    |
+| T001                  | B005               | 5      | 3500       | 17500    |
+| T002                  | B002               | 2      | 38000      | 76000    |
+| T002                  | B003               | 1      | 17000      | 17000    |
+
+
+#### 3NF (Third Normal Form)
+Hasil akhir 3NF:
+
+**KASIR**
+
+| id_kasir (PK) | nama_kasir   | shift |
+|---------------|--------------|-------|
+| K001          | Andi Pratama | Pagi  |
+| K002          | Dewi Lestari | Siang |
+
+**TRANSAKSI**
+
+| id_transaksi (PK) | tanggal          | id_kasir (FK) |
+|-------------------|------------------|---------------|
+| T001              | 2026-10-25 08:15 | K001          |
+| T002              | 2026-10-25 13:40 | K002          |
+
+**BARANG**
+
+| id_barang (PK) | nama_barang           | harga_jual | stok |
+|----------------|-----------------------|------------|------|
+| B001           | Beras Premium 5 Kg    | 65000      | 50   |
+| B002           | Minyak Goreng 2 Liter | 38000      | 40   |
+| B003           | Gula Pasir 1 Kg       | 17000      | 60   |
+| B005           | Mie Instan Goreng     | 3500       | 200  |
+
+**DETAIL_TRANSAKSI**
+
+| id_transaksi (PK, FK) | id_barang (PK, FK) | jumlah | harga_jual |
+|-----------------------|--------------------|--------|------------|
+| T001                  | B001               | 1      | 65000      |
+| T001                  | B005               | 5      | 3500       |
+| T002                  | B002               | 2      | 38000      |
+| T002                  | B003               | 1      | 17000      |
+
