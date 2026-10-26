@@ -157,7 +157,91 @@ LEFT JOIN detail_transaksi d ON d.id_transaksi = t.id_transaksi
 GROUP BY t.id_transaksi, t.tanggal, t.id_kasir;
 
 
-### VALIDASI CEK ERROR
+USE db_retail;
+
+-- 1. PEMILIK
+INSERT INTO pemilik (id_pemilik, nama_pemilik) VALUES
+('P001', 'Budi Santoso'),
+('P002', 'Siti Aminah');
+
+-- 2. KASIR
+INSERT INTO kasir (id_kasir, nama_kasir, shift) VALUES
+('K001', 'Andi Pratama', 'Pagi'),
+('K002', 'Dewi Lestari', 'Siang'),
+('K003', 'Rizky Maulana', 'Malam');
+
+-- 3. SUPPLIER
+INSERT INTO supplier (id_supplier, nama_supplier, no_telepon) VALUES
+('S001', 'PT Sumber Pangan Makmur', '081234567801'),
+('S002', 'CV Jaya Abadi', '081234567802'),
+('S003', 'UD Sinar Harapan', '081234567803');
+
+-- 4. BARANG
+INSERT INTO barang (id_barang, nama_barang, harga_jual, stok) VALUES
+('B001', 'Beras Premium 5 Kg', 65000.00, 50),
+('B002', 'Minyak Goreng 2 Liter', 38000.00, 40),
+('B003', 'Gula Pasir 1 Kg', 17000.00, 60),
+('B004', 'Telur Ayam 1 Kg', 28000.00, 30),
+('B005', 'Mie Instan Goreng', 3500.00, 200),
+('B006', 'Kopi Sachet', 2500.00, 150),
+('B007', 'Susu UHT 1 Liter', 18000.00, 45),
+('B008', 'Sabun Mandi Batang', 4500.00, 80);
+
+-- 5. BARANG_MASUK
+INSERT INTO barang_masuk (id_masuk, tanggal_masuk, no_surat_jalan, id_supplier) VALUES
+('M001', '2026-10-20', 'SJ-2026-001', 'S001'),
+('M002', '2026-10-22', 'SJ-2026-002', 'S002'),
+('M003', '2026-10-24', 'SJ-2026-003', 'S003');
+
+-- 6. DETAIL_MASUK
+INSERT INTO detail_masuk (id_masuk, id_barang, jumlah_masuk) VALUES
+('M001', 'B001', 50),
+('M001', 'B003', 60),
+('M002', 'B002', 40),
+('M002', 'B004', 30),
+('M003', 'B005', 200),
+('M003', 'B006', 150),
+('M003', 'B007', 45),
+('M003', 'B008', 80);
+
+-- 7. TRANSAKSI
+INSERT INTO transaksi (id_transaksi, tanggal, id_kasir) VALUES
+('T001', '2026-10-25 08:15:00', 'K001'),
+('T002', '2026-10-25 13:40:00', 'K002'),
+('T003', '2026-10-25 09:30:00', 'K001'),
+('T004', '2026-10-25 19:20:00', 'K003'),
+('T005', '2026-10-26 14:05:00', 'K002');
+
+-- 8. DETAIL_TRANSAKSI (subtotal terisi otomatis)
+INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah, harga_jual) VALUES
+('T001', 'B001', 1, 65000.00),
+('T001', 'B005', 5, 3500.00),
+('T002', 'B002', 2, 38000.00),
+('T002', 'B003', 1, 17000.00),
+('T003', 'B004', 1, 28000.00),
+('T003', 'B007', 2, 18000.00),
+('T004', 'B005', 10, 3500.00),
+('T004', 'B008', 3, 4500.00),
+('T005', 'B006', 6, 2500.00),
+('T005', 'B003', 2, 17000.00);
+
+-- 9. PENYESUAIAN_STOK
+INSERT INTO penyesuaian_stok (id_penyesuaian, jenis_penyesuaian, tanggal, jumlah, alasan, id_barang) VALUES
+('PS001', 'Kurang', '2026-10-25', 2, 'Telur pecah saat penataan di rak', 'B004'),
+('PS002', 'Tambah', '2026-10-25', 5, 'Koreksi hasil stok opname', 'B005'),
+('PS003', 'Kurang', '2026-10-26', 1, 'Produk kedaluwarsa', 'B007');
+
+-- 10. RETUR_PELANGGAN
+INSERT INTO retur_pelanggan (id_retur, tanggal_retur, alasan, jumlah_retur, id_transaksi, id_barang, id_pemilik) VALUES
+('R001', '2026-10-26', 'Kemasan minyak bocor', 1, 'T002', 'B002', 'P001'),
+('R002', '2026-10-26', 'Sabun rusak dan retak', 1, 'T004', 'B008', 'P001'),
+('R003', '2026-10-26', 'Susu mendekati kedaluwarsa', 1, 'T003', 'B007', 'P002');
+
+-- Cek hasil view total transaksi
+SELECT * FROM v_transaksi_total;
+
+
+### VALIDASI CEK UJI ERROR
 
 -- Barang tidak ada (error #1452)
 INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah, harga_jual)
